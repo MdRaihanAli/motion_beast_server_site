@@ -29,14 +29,44 @@ async function run() {
         await client.connect();
 
         const classes = client.db('motion_breast_DB').collection('classes')
+        const userCollections = client.db('motion_breast_DB').collection('users')
 
         app.get('/', (req, res) => {
             res.send("Motion is runnig");
         })
-//  oll class get
-        app.get('/classes', async(req, res)=>{
+        //  all class get
+
+        app.get('/classes', async (req, res) => {
             const result = await classes.find().sort({ enarolled: -1 }).collation({ locale: "en_US", numericOrdering: true }).toArray()
             res.send(result)
+        })
+
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            const email = user.email
+            const query = { email: email }
+            const exjestUser = await userCollections.findOne(query)
+            if (exjestUser) {
+                return
+            }
+            const result = await userCollections.insertOne(user)
+            res.send(result)
+            console.log(user);
+        })
+
+
+        app.patch('/class/:id', async(req, res)=>{
+            const id = req.params.id
+            const filter = {_id: new ObjectId(id)}
+            const newupdate= req.body
+
+            const updateDoc = {
+                $set: {
+                  role: newupdate.role
+                },
+              };
+              const result = await classes.updateOne(filter, updateDoc)
+              res.send(result)
         })
 
 
