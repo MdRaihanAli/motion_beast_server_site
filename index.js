@@ -55,17 +55,19 @@ async function run() {
         })
 
 
-        app.patch('/class/:id', async(req, res)=>{
+        app.put('/class/:id', async(req, res)=>{
             const id = req.params.id
             const filter = {_id: new ObjectId(id)}
             const newupdate= req.body
+            const options = { upsert: true };
 
             const updateDoc = {
                 $set: {
-                  role: newupdate.role
+                  role: newupdate.role,
+                  feedback:newupdate.feedback
                 },
               };
-              const result = await classes.updateOne(filter, updateDoc)
+              const result = await classes.updateOne(filter, updateDoc, options)
               res.send(result)
         })
 
