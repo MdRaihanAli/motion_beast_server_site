@@ -85,6 +85,12 @@ async function run() {
 
         app.post('/selectClass', async (req, res) => {
             const select = req.body;
+            const id = select._id 
+           
+            const filter = selectedClasses.findOne({_id: new ObjectId(id)})
+            if (filter) {
+              return  console.log("filter");
+            }
             const result = await selectedClasses.insertOne(select)
             res.send(result)
         })
@@ -153,12 +159,14 @@ async function run() {
         })
 
         // selected item delete
-        
+
         app.delete('/selectedItemDelete/:id', async (req, res) => {
             const id = req.params.id
-            const query = { _id: new ObjectId(id) }
+            const query = { _id: id }
+            
             const result = await selectedClasses.deleteOne(query)
             res.send(result)
+            // console.log(result);
         })
 
 
