@@ -55,6 +55,13 @@ async function run() {
             res.send(result)
         })
 
+        //  get select class 
+
+        app.get('/selectedClass', async (req, res) => {
+            const result = await selectedClasses.find().toArray()
+            res.send(result)
+        })
+
         app.post('/user', async (req, res) => {
             const user = req.body;
             const email = user.email
@@ -74,6 +81,7 @@ async function run() {
             const result = await classes.insertOne(newclass)
             res.send(result)
         })
+        //  select class
 
         app.post('/selectClass', async (req, res) => {
             const select = req.body;
@@ -141,6 +149,15 @@ async function run() {
                 },
             };
             const result = await classes.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
+        // selected item delete
+        
+        app.delete('/selectedItemDelete/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await selectedClasses.deleteOne(query)
             res.send(result)
         })
 
