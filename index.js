@@ -30,6 +30,7 @@ async function run() {
 
         const classes = client.db('motion_breast_DB').collection('classes')
         const userCollections = client.db('motion_breast_DB').collection('users')
+        const selectedClasses = client.db('motion_breast_DB').collection('selectedClasses')
 
         app.get('/', (req, res) => {
             res.send("Motion is runnig");
@@ -39,6 +40,14 @@ async function run() {
         app.get('/classes', async (req, res) => {
             const result = await classes.find().sort({ enarolled: -1 }).collation({ locale: "en_US", numericOrdering: true }).toArray()
             res.send(result)
+        })
+
+        app.get('/myClass', async (req, res) => {
+            const email = req.query.email
+            const filter = { email: email }
+            const result = await classes.find(filter).toArray()
+            res.send(result)
+            // console.log(query);
         })
         //  All users Get
         app.get('/users', async (req, res) => {
@@ -56,7 +65,20 @@ async function run() {
             }
             const result = await userCollections.insertOne(user)
             res.send(result)
-            
+
+        })
+
+
+        app.post('/addClass', async (req, res) => {
+            const newclass = req.body;
+            const result = await classes.insertOne(newclass)
+            res.send(result)
+        })
+
+        app.post('/selectClass', async (req, res) => {
+            const select = req.body;
+            const result = await selectedClasses.insertOne(select)
+            res.send(result)
         })
 
         // class stutus update
@@ -104,6 +126,21 @@ async function run() {
                 },
             };
             const result = await userCollections.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
+        app.patch('/updateClass/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const newupdate = req.body
+
+            const updateDoc = {
+                $set: {
+                    price: newupdate.price,
+                    title: newupdate.title
+                },
+            };
+            const result = await classes.updateOne(filter, updateDoc)
             res.send(result)
         })
 
