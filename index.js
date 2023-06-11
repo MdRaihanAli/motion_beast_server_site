@@ -40,6 +40,11 @@ async function run() {
             const result = await classes.find().sort({ enarolled: -1 }).collation({ locale: "en_US", numericOrdering: true }).toArray()
             res.send(result)
         })
+        //  All users Get
+        app.get('/users', async (req, res) => {
+            const result = await userCollections.find().toArray()
+            res.send(result)
+        })
 
         app.post('/user', async (req, res) => {
             const user = req.body;
@@ -51,24 +56,55 @@ async function run() {
             }
             const result = await userCollections.insertOne(user)
             res.send(result)
-            console.log(user);
+            
         })
 
-
-        app.put('/class/:id', async(req, res)=>{
+        // class stutus update
+        app.put('/class/:id', async (req, res) => {
             const id = req.params.id
-            const filter = {_id: new ObjectId(id)}
-            const newupdate= req.body
+            const filter = { _id: new ObjectId(id) }
+            const newupdate = req.body
             const options = { upsert: true };
 
             const updateDoc = {
                 $set: {
-                  role: newupdate.role,
-                  feedback:newupdate.feedback
+                    role: newupdate.role,
+                    // feedback: newupdate.feedback
                 },
-              };
-              const result = await classes.updateOne(filter, updateDoc, options)
-              res.send(result)
+            };
+            const result = await classes.updateOne(filter, updateDoc, options)
+            res.send(result)
+        })
+        app.put('/classfeedback/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const newupdate = req.body
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    feedback: newupdate.feedback
+                },
+            };
+            const result = await classes.updateOne(filter, updateDoc, options)
+            res.send(result)
+        })
+
+
+        // user status update 
+        app.patch('/user/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const newupdate = req.body
+
+            const updateDoc = {
+                $set: {
+                    role: newupdate.role,
+
+                },
+            };
+            const result = await userCollections.updateOne(filter, updateDoc)
+            res.send(result)
         })
 
 
