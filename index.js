@@ -85,12 +85,8 @@ async function run() {
 
         app.post('/selectClass', async (req, res) => {
             const select = req.body;
-            const id = select._id 
-           
-            const filter = selectedClasses.findOne({_id: new ObjectId(id)})
-            if (filter) {
-              return  console.log("filter");
-            }
+
+
             const result = await selectedClasses.insertOne(select)
             res.send(result)
         })
@@ -143,6 +139,8 @@ async function run() {
             res.send(result)
         })
 
+        // name and price updater
+
         app.patch('/updateClass/:id', async (req, res) => {
             const id = req.params.id
             const filter = { _id: new ObjectId(id) }
@@ -158,12 +156,29 @@ async function run() {
             res.send(result)
         })
 
+
+        //  book to enrolled class
+
+        app.patch('/enrolledClass/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const newupdate = req.body
+
+            const updateDoc = {
+                $set: {
+                    select: newupdate.select,
+                },
+            };
+            const result = await classes.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+
         // selected item delete
 
         app.delete('/selectedItemDelete/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: id }
-            
+
             const result = await selectedClasses.deleteOne(query)
             res.send(result)
             // console.log(result);
