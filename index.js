@@ -161,7 +161,7 @@ async function run() {
 
         app.patch('/enrolledClass/:id', async (req, res) => {
             const id = req.params.id
-            const filter = { _id: new ObjectId(id) }
+            const filter = { _id: id }
             const newupdate = req.body
 
             const updateDoc = {
@@ -169,7 +169,7 @@ async function run() {
                     select: newupdate.select,
                 },
             };
-            const result = await classes.updateOne(filter, updateDoc)
+            const result = await selectedClasses.updateOne(filter, updateDoc)
             res.send(result)
         })
 
