@@ -5,6 +5,7 @@ app.use(cors())
 app.use(express.json())
 require('dotenv').config()
 const { ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.PEYMENT_SECRET_KEY)
 
 const port = process.env.PORT || 5000
 
@@ -31,6 +32,7 @@ async function run() {
         const classes = client.db('motion_breast_DB').collection('classes')
         const userCollections = client.db('motion_breast_DB').collection('users')
         const selectedClasses = client.db('motion_breast_DB').collection('selectedClasses')
+        const bookingsCollection = client.db('motion_breast_DB').collection('bookings')
 
         app.get('/', (req, res) => {
             res.send("Motion is runnig");
@@ -58,8 +60,10 @@ async function run() {
         //  get select class 
 
         app.get('/selectedClass', async (req, res) => {
-            const result = await selectedClasses.find().toArray()
+            const quary = {email : req.query.email}
+            const result = await selectedClasses.find(quary).toArray()
             res.send(result)
+            // console.log(quary);
         })
 
         app.post('/user', async (req, res) => {
@@ -161,7 +165,7 @@ async function run() {
 
         app.patch('/enrolledClass/:id', async (req, res) => {
             const id = req.params.id
-            const filter = { _id: id }
+            const filter = { _id: new ObjectId(id)}
             const newupdate = req.body
 
             const updateDoc = {
@@ -172,18 +176,77 @@ async function run() {
             const result = await selectedClasses.updateOne(filter, updateDoc)
             res.send(result)
         })
+        
+        app.patch('/enroledUpdate/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id)}
+            const newupdate = req.body
+
+            const updateDoc = {
+                $set: {
+                    enarolled: newupdate.enarolled,
+                },
+            };
+            const result = await classes.updateOne(filter, updateDoc)
+            res.send(result)
+        })
 
         // selected item delete
 
         app.delete('/selectedItemDelete/:id', async (req, res) => {
             const id = req.params.id
-            const query = { _id: id }
+            const query = { _id: new ObjectId(id)}
 
             const result = await selectedClasses.deleteOne(query)
             res.send(result)
             // console.log(result);
         })
 
+
+
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const { price } = req.body
+            const amount = parseFloat(price) * 100
+            if (!price) {
+                return
+            }
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card'],
+            })
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            })
+        })
+
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body
+            const result = await bookingsCollection.insertOne(booking)
+            if (result.insertedId) {
+                // Send confirmation email to guest
+                sendMail(
+                    {
+                        subject: 'Booking Successful!',
+                        message: `Booking Id: ${result?.insertedId}, TransactionId: ${booking.transactionId}`,
+                    },
+                    booking?.guest?.email
+                )
+                // Send confirmation email to host
+                sendMail(
+                    {
+                        subject: 'Your room got booked!',
+                        message: `Booking Id: ${result?.insertedId}, TransactionId: ${booking.transactionId}. Check dashboard for more info`,
+                    },
+                    booking?.host
+                )
+            }
+            // console.log(result)
+            res.send(result)
+        })
 
 
 
