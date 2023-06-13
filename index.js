@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -34,9 +35,24 @@ async function run() {
         const selectedClasses = client.db('motion_breast_DB').collection('selectedClasses')
         const bookingsCollection = client.db('motion_breast_DB').collection('bookings')
 
+
+        
+
+
+
+
         app.get('/', (req, res) => {
             res.send("Motion is runnig");
         })
+
+        // app.post('/jwt', (req, res) => {
+        //     const user = req.body
+        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        //       expiresIn: '1h',
+        //     })
+      
+        //     res.send({ token })
+        //   })
         //  all class get
 
         app.get('/classes', async (req, res) => {
