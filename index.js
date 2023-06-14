@@ -31,7 +31,6 @@ const verifyJWT = (req, res, next) => {
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MOTION_DB_USER_NAME}:${process.env.MOTION_DB_PASS}@cluster0.q8hlybw.mongodb.net/?retryWrites=true&w=majority`;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -76,7 +75,7 @@ async function run() {
             const filter = { email: email }
             const result = await classes.find(filter).toArray()
             res.send(result)
-            // console.log(query);
+           
         })
         //  All users Get
         app.get('/users', async (req, res) => {
@@ -86,7 +85,7 @@ async function run() {
 
         //  get select class 
 
-        app.get('/selectedClass', verifyJWT, async (req, res) => {
+        app.get('/selectedClass',  async (req, res) => {
             const quary = { email: req.query.email }
             const result = await selectedClasses.find(quary).toArray()
             res.send(result)
@@ -226,7 +225,7 @@ async function run() {
 
             const result = await selectedClasses.deleteOne(query)
             res.send(result)
-            // console.log(result);
+          
         })
 
 
@@ -271,7 +270,6 @@ async function run() {
                     booking?.host
                 )
             }
-            // console.log(result)
             res.send(result)
         })
 
