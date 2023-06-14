@@ -10,7 +10,21 @@ const stripe = require('stripe')(process.env.PEYMENT_SECRET_KEY)
 
 const port = process.env.PORT || 5000
 
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' })
+    }
+    const token = authorization.split(' ')[1]
 
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+        if (error) {
+            return res.status(401).send({ error: true, message: 'unauthorized access' })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
 
 
 
@@ -36,23 +50,20 @@ async function run() {
         const bookingsCollection = client.db('motion_breast_DB').collection('bookings')
 
 
-        
-
-
-
-
         app.get('/', (req, res) => {
             res.send("Motion is runnig");
         })
 
-        // app.post('/jwt', (req, res) => {
-        //     const user = req.body
-        //     const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        //       expiresIn: '1h',
-        //     })
-      
-        //     res.send({ token })
-        //   })
+        app.post('/jwt', (req, res) => {
+            const user = req.body
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '8h',
+            })
+
+            res.send({ token })
+        })
+
+
         //  all class get
 
         app.get('/classes', async (req, res) => {
@@ -75,8 +86,8 @@ async function run() {
 
         //  get select class 
 
-        app.get('/selectedClass', async (req, res) => {
-            const quary = {email : req.query.email}
+        app.get('/selectedClass', verifyJWT, async (req, res) => {
+            const quary = { email: req.query.email }
             const result = await selectedClasses.find(quary).toArray()
             res.send(result)
             // console.log(quary);
@@ -181,7 +192,7 @@ async function run() {
 
         app.patch('/enrolledClass/:id', async (req, res) => {
             const id = req.params.id
-            const filter = { _id: new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const newupdate = req.body
 
             const updateDoc = {
@@ -192,10 +203,10 @@ async function run() {
             const result = await selectedClasses.updateOne(filter, updateDoc)
             res.send(result)
         })
-        
+
         app.patch('/enroledUpdate/:id', async (req, res) => {
             const id = req.params.id
-            const filter = { _id: new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const newupdate = req.body
 
             const updateDoc = {
@@ -211,7 +222,7 @@ async function run() {
 
         app.delete('/selectedItemDelete/:id', async (req, res) => {
             const id = req.params.id
-            const query = { _id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
 
             const result = await selectedClasses.deleteOne(query)
             res.send(result)
